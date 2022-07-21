@@ -1,13 +1,17 @@
-package example.examplemod
+package de.chasenet.blockhunt
 
-import example.examplemod.block.ModBlocks
+import com.mojang.logging.LogUtils
+import de.chasenet.blockhunt.commands.StartHuntCommand
 import net.minecraft.client.Minecraft
+import net.minecraftforge.event.RegisterCommandsEvent
+import net.minecraftforge.event.entity.player.PlayerEvent
 import net.minecraftforge.fml.common.Mod
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent
 import net.minecraftforge.fml.event.lifecycle.FMLDedicatedServerSetupEvent
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
+import thedarkcolour.kotlinforforge.forge.FORGE_BUS
 import thedarkcolour.kotlinforforge.forge.MOD_BUS
 import thedarkcolour.kotlinforforge.forge.runForDist
 
@@ -18,30 +22,44 @@ import thedarkcolour.kotlinforforge.forge.runForDist
  *
  * An example for blocks is in the `blocks` package of this mod.
  */
-@Mod(ExampleMod.ID)
-object ExampleMod {
-    const val ID = "examplemod"
+@Mod(BlockHuntMod.MODID)
+object BlockHuntMod {
+    const val MODID = "blockhunt"
 
     // the logger for our mod
-    val LOGGER: Logger = LogManager.getLogger(ID)
+    val LOGGER: Logger = LogManager.getLogger(MODID)
 
     init {
         LOGGER.log(Level.INFO, "Hello world!")
 
-        // Register the KDeferredRegister to the mod-specific event bus
-        ModBlocks.REGISTRY.register(MOD_BUS)
-
-        val obj = runForDist(
+        runForDist(
             clientTarget = {
-                MOD_BUS.addListener(::onClientSetup)
+                MOD_BUS.addListener(BlockHuntMod::onClientSetup)
                 Minecraft.getInstance()
             },
             serverTarget = {
-                MOD_BUS.addListener(::onServerSetup)
-                "test"
+                MOD_BUS.addListener(BlockHuntMod::onServerSetup)
             })
 
-        println(obj)
+        FORGE_BUS.addListener(BlockHuntMod::registerCommands)
+        FORGE_BUS.addListener(BlockHuntMod::onItemPickup)
+    }
+
+    private fun onItemPickup(event: PlayerEvent.ItemPickupEvent) {
+        BlockHuntGame.onBlockObtained(event.entity, event.stack)
+        LogUtils.getLogger().info(event.entity.name.string + ": " + event.stack.displayName.string)
+    }
+
+    private fun onItemCrafted(event: PlayerEvent.ItemCraftedEvent) {
+        BlockHuntGame.onBlockObtained(event.entity, event.crafting)
+    }
+
+    private fun onItemSmelted(event: PlayerEvent.ItemSmeltedEvent) {
+        BlockHuntGame.onBlockObtained(event.entity, event.smelting)
+    }
+
+    private fun registerCommands(event: RegisterCommandsEvent) {
+        StartHuntCommand.register(event.dispatcher, event.buildContext)
     }
 
     /**
