@@ -29,7 +29,6 @@ object UiUtils {
             block.name,
             players
         )
-
     }
 
     fun endHuntUi(

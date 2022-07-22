@@ -9,10 +9,13 @@ import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.BlockItem
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.block.Block
+import net.minecraft.world.scores.Scoreboard
+import net.minecraft.world.scores.criteria.ObjectiveCriteria
 import net.minecraftforge.registries.ForgeRegistries
 
 object BlockHuntGame {
     private val LOG = LogUtils.getLogger()
+    const val OBJECTIVE_ID = "Blockhunt"
 
     var block: Block? = null
         private set
@@ -21,6 +24,19 @@ object BlockHuntGame {
         get() = block != null
 
     fun startGame(sourceStack: CommandSourceStack, block: Block? = null) {
+        with(sourceStack.scoreboard) {
+            if (!hasObjective(OBJECTIVE_ID)) {
+                val objective = addObjective(
+                    OBJECTIVE_ID,
+                    ObjectiveCriteria.DUMMY,
+                    Component.literal("Blockhunt"),
+                    ObjectiveCriteria.RenderType.INTEGER
+                )
+                setDisplayObjective(Scoreboard.DISPLAY_SLOT_SIDEBAR, objective)
+            }
+        }
+
+
         try {
             val blackList = BlockHuntMod.blockHuntConfig.idBlacklistPatterns.get().map { pattern ->
                 val regex = pattern.toRegex()
@@ -49,7 +65,7 @@ object BlockHuntGame {
         }
     }
 
-    fun stopGame(server:MinecraftServer) {
+    fun stopGame(server: MinecraftServer) {
         block = null
         UiUtils.stopHuntUi(server.playerList.players)
     }
@@ -60,6 +76,8 @@ object BlockHuntGame {
 
         if (stack.item == block!!.asItem()) {
             UiUtils.endHuntUi(player.server!!.playerList.players, player)
+            player.scoreboard.getObjective(OBJECTIVE_ID)
+                ?.let { player.scoreboard.getOrCreatePlayerScore(player.scoreboardName, it).increment() }
             block = null
         }
     }
