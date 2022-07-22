@@ -36,7 +36,13 @@ object BlockHuntMod {
             FORGE_BUS.addListener(BlockHuntMod::onItemPickup)
             FORGE_BUS.addListener(BlockHuntMod::onItemCrafted)
             FORGE_BUS.addListener(BlockHuntMod::onItemSmelted)
+            FORGE_BUS.addListener(BlockHuntMod::onServerStopping)
         }
+        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, blockHuntConfigSpec)
+    }
+
+    private fun onServerStopping(it: ServerStoppingEvent) {
+        BlockHuntGame.stopGame(it.server)
     }
 
     private fun onItemPickup(event: PlayerEvent.ItemPickupEvent) {
