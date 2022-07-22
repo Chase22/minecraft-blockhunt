@@ -1,19 +1,14 @@
 package de.chasenet.blockhunt
 
 import com.mojang.logging.LogUtils
+import de.chasenet.blockhunt.commands.SkipHuntCommand
 import de.chasenet.blockhunt.commands.StartHuntCommand
-import net.minecraft.client.Minecraft
+import de.chasenet.blockhunt.commands.StopHuntCommand
 import net.minecraftforge.event.RegisterCommandsEvent
 import net.minecraftforge.event.entity.player.PlayerEvent
 import net.minecraftforge.fml.common.Mod
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent
-import net.minecraftforge.fml.event.lifecycle.FMLDedicatedServerSetupEvent
-import org.apache.logging.log4j.Level
-import org.apache.logging.log4j.LogManager
-import org.apache.logging.log4j.Logger
+import thedarkcolour.kotlinforforge.forge.DIST
 import thedarkcolour.kotlinforforge.forge.FORGE_BUS
-import thedarkcolour.kotlinforforge.forge.MOD_BUS
-import thedarkcolour.kotlinforforge.forge.runForDist
 
 /**
  * Main mod class. Should be an `object` declaration annotated with `@Mod`.
@@ -26,23 +21,13 @@ import thedarkcolour.kotlinforforge.forge.runForDist
 object BlockHuntMod {
     const val MODID = "blockhunt"
 
-    // the logger for our mod
-    val LOGGER: Logger = LogManager.getLogger(MODID)
-
     init {
-        LOGGER.log(Level.INFO, "Hello world!")
-
-        runForDist(
-            clientTarget = {
-                MOD_BUS.addListener(BlockHuntMod::onClientSetup)
-                Minecraft.getInstance()
-            },
-            serverTarget = {
-                MOD_BUS.addListener(BlockHuntMod::onServerSetup)
-            })
-
-        FORGE_BUS.addListener(BlockHuntMod::registerCommands)
-        FORGE_BUS.addListener(BlockHuntMod::onItemPickup)
+        if (DIST.isDedicatedServer) {
+            FORGE_BUS.addListener(BlockHuntMod::registerCommands)
+            FORGE_BUS.addListener(BlockHuntMod::onItemPickup)
+            FORGE_BUS.addListener(BlockHuntMod::onItemCrafted)
+            FORGE_BUS.addListener(BlockHuntMod::onItemSmelted)
+        }
     }
 
     private fun onItemPickup(event: PlayerEvent.ItemPickupEvent) {
@@ -60,21 +45,7 @@ object BlockHuntMod {
 
     private fun registerCommands(event: RegisterCommandsEvent) {
         StartHuntCommand.register(event.dispatcher, event.buildContext)
-    }
-
-    /**
-     * This is used for initializing client specific
-     * things such as renderers and keymaps
-     * Fired on the mod specific event bus.
-     */
-    private fun onClientSetup(event: FMLClientSetupEvent) {
-        LOGGER.log(Level.INFO, "Initializing client...")
-    }
-
-    /**
-     * Fired on the global Forge bus.
-     */
-    private fun onServerSetup(event: FMLDedicatedServerSetupEvent) {
-        LOGGER.log(Level.INFO, "Server starting...")
+        StopHuntCommand.register(event.dispatcher)
+        SkipHuntCommand.register(event.dispatcher)
     }
 }

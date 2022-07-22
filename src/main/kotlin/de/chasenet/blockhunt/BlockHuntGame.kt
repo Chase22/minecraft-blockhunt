@@ -3,21 +3,25 @@ package de.chasenet.blockhunt
 import com.mojang.logging.LogUtils
 import net.minecraft.commands.CommandSourceStack
 import net.minecraft.network.chat.Component
-import net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket
-import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket
-import net.minecraft.server.level.ServerPlayer
+import net.minecraft.resources.ResourceKey
 import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.BlockItem
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.block.Block
 import net.minecraftforge.registries.ForgeRegistries
-import java.util.function.Consumer
 
 object BlockHuntGame {
     private val BLACKLISTED_IDS by lazy {
-        ForgeRegistries.BLOCKS.keys.filter { it.path.startsWith("infested_") } +
-                ForgeRegistries.BLOCKS.keys.filter { it.path.endsWith("_ore") }
+        listOf(
+            ForgeRegistries.BLOCKS.keys.filter { it.path.startsWith("infested_") },
+            ForgeRegistries.BLOCKS.keys.filter { it.path.endsWith("_ore") },
+            ForgeRegistries.BLOCKS.keys.filter { it.path.startsWith("potted_") }
+        ).flatten()
     }
 
+    private val additionalKeys: MutableList<ResourceKey<Block>> = ArrayList()
+
+    private val LOG = LogUtils.getLogger()
 
     var block: Block? = null
         private set
@@ -25,21 +29,17 @@ object BlockHuntGame {
     val isActive: Boolean
         get() = block != null
 
-    @JvmStatic
     fun startGame(sourceStack: CommandSourceStack, block: Block? = null) {
         try {
-            val blocksList = ForgeRegistries.BLOCKS.entries.filter { !BLACKLISTED_IDS.contains(it.key.location()) }
+            val blocksList = ForgeRegistries.ITEMS.entries.filter { it.value is BlockItem }
+                .map { it.key to (it.value as BlockItem).block }
+                .filter { !(BLACKLISTED_IDS+additionalKeys).contains(it.first.location()) }
 
-            val selectedBlock = block ?: blocksList.random().value
+            val selectedBlock = block ?: blocksList.random().second
 
             val key = ForgeRegistries.BLOCKS.getResourceKey(selectedBlock).get()
 
-            val subtitleTextPacket = ClientboundSetSubtitleTextPacket(selectedBlock!!.name)
-            val titleTextPacket = ClientboundSetTitleTextPacket(Component.literal("New Blockhunt!"))
-            sourceStack.server.playerList.players.forEach(Consumer { player: ServerPlayer ->
-                player.connection.send(subtitleTextPacket)
-                player.connection.send(titleTextPacket)
-            })
+            UiUtils.startHuntUi(sourceStack, selectedBlock, key)
 
             this.block = selectedBlock
             sourceStack.sendSuccess(
@@ -48,23 +48,30 @@ object BlockHuntGame {
                 ), false
             )
         } catch (e: Exception) {
-            LogUtils.getLogger().error("Error executing command", e)
+            sourceStack.sendFailure(Component.literal("An error occurred while starting the hunt. Please check the logs"))
+            LOG.error("Error executing command", e)
         }
+    }
+
+    fun stopGame(sourceStack: CommandSourceStack) {
+        block = null
+        UiUtils.stopHuntUi(sourceStack.server.playerList.players)
     }
 
     @JvmStatic
     fun onBlockObtained(player: Player, stack: ItemStack) {
         if (block == null) return
 
-        val subtitleTextPacket =
-            ClientboundSetSubtitleTextPacket(Component.literal("Winner: ").append(player.displayName))
-        val titleTextPacket = ClientboundSetTitleTextPacket(Component.literal("Blockhunt over!"))
         if (stack.item == block!!.asItem()) {
-            player.level.server!!.playerList.players.forEach(Consumer { serverPlayer: ServerPlayer ->
-                serverPlayer.connection.send(subtitleTextPacket)
-                serverPlayer.connection.send(titleTextPacket)
-            })
+            UiUtils.endHuntUi(player.server!!.playerList.players, player)
             block = null
         }
+    }
+
+    fun skipGame(sourceStack: CommandSourceStack) {
+        if (block == null) return
+        additionalKeys.add(ForgeRegistries.BLOCKS.getResourceKey(block).get())
+        LOG.info(additionalKeys.toString())
+        startGame(sourceStack)
     }
 }
