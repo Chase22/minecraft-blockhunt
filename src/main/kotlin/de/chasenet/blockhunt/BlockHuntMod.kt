@@ -1,6 +1,5 @@
 package de.chasenet.blockhunt
 
-import com.mojang.logging.LogUtils
 import de.chasenet.blockhunt.commands.SkipHuntCommand
 import de.chasenet.blockhunt.commands.StartHuntCommand
 import de.chasenet.blockhunt.commands.StopHuntCommand
@@ -47,7 +46,6 @@ object BlockHuntMod {
 
     private fun onItemPickup(event: PlayerEvent.ItemPickupEvent) {
         BlockHuntGame.onBlockObtained(event.entity, event.stack)
-        LogUtils.getLogger().info(event.entity.name.string + ": " + event.stack.displayName.string)
     }
 
     private fun onItemCrafted(event: PlayerEvent.ItemCraftedEvent) {

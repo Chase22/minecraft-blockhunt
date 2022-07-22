@@ -27,8 +27,6 @@ object BlockHuntGame {
                 ForgeRegistries.BLOCKS.keys.filter { it.toString().matches(regex) }
             }.flatten() + BlockHuntMod.blockHuntConfig.idBlacklist.get().map(::ResourceLocation)
 
-            LOG.info(blackList.toString())
-
             val blocksList = ForgeRegistries.ITEMS.entries.filter { it.value is BlockItem }
                 .map { it.key to (it.value as BlockItem).block }
                 .filter { !blackList.contains(it.first.location()) }
@@ -41,9 +39,9 @@ object BlockHuntGame {
 
             this.block = selectedBlock
             sourceStack.sendSuccess(
-                Component.literal("Random Block selected: ").append(
+                Component.literal("Started hunt for block: ").append(
                     key.location().toString()
-                ), false
+                ), true
             )
         } catch (e: Exception) {
             sourceStack.sendFailure(Component.literal("An error occurred while starting the hunt. Please check the logs"))
@@ -77,10 +75,4 @@ object BlockHuntGame {
         }
         startGame(sourceStack)
     }
-}
-
-fun main() {
-    val string = "minecraft:infested_cobblestone"
-    val regex = "minecraft:infested_.*".toRegex()
-    println(regex.matches(string))
 }
