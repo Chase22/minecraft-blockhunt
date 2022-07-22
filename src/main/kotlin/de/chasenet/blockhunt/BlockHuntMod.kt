@@ -1,5 +1,6 @@
 package de.chasenet.blockhunt
 
+import com.mojang.logging.LogUtils
 import de.chasenet.blockhunt.commands.SkipHuntCommand
 import de.chasenet.blockhunt.commands.StartHuntCommand
 import de.chasenet.blockhunt.commands.StopHuntCommand
@@ -23,6 +24,8 @@ import thedarkcolour.kotlinforforge.forge.FORGE_BUS
 @Mod(BlockHuntMod.MODID)
 object BlockHuntMod {
     const val MODID = "blockhunt"
+
+    val LOG = LogUtils.getLogger()
 
     private val configPair = ForgeConfigSpec.Builder().configure(::BlockHuntConfig)
     val blockHuntConfig: BlockHuntConfig = configPair.left

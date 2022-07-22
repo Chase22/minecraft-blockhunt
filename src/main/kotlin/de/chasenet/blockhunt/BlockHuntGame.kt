@@ -54,6 +54,13 @@ object BlockHuntGame {
             UiUtils.startHuntUi(sourceStack, selectedBlock, key)
 
             this.block = selectedBlock
+
+            if (BlockHuntMod.blockHuntConfig.clearInventory.get()) {
+                sourceStack.server.playerList.players.forEach {
+                    clearAndAddKit(it.inventory)
+                }
+            }
+
             sourceStack.sendSuccess(
                 Component.literal("Started hunt for block: ").append(
                     key.location().toString()
