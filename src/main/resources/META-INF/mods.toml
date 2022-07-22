@@ -9,10 +9,10 @@ license='LGPL'
 modId="blockhunt"
 version="${file.jarVersion}"
 displayName="BlockHunt"
-credits="The ExampleMod dev team"
-authors="ExampleModAuthor"
+credits="Chase"
+authors="Chase<chase@mailbox.org>"
 description='''
-Example mod that uses Kotlin for Forge.
+Minecraft minigame. Hunt for a randomly selected block
 '''
 [[dependencies.blockhunt]]
     modId="forge"
