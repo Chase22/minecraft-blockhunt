@@ -12,7 +12,7 @@ object StopHuntCommand {
             .requires { it.hasPermission(2) }
             .executes {
                 if (BlockHuntGame.isActive) {
-                    BlockHuntGame.stopGame(it.source)
+                    BlockHuntGame.stopGame(it.source.server)
                 } else {
                     it.source.sendFailure(Component.literal("No hunt is active"))
                 }

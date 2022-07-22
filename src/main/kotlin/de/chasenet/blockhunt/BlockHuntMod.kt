@@ -4,9 +4,13 @@ import com.mojang.logging.LogUtils
 import de.chasenet.blockhunt.commands.SkipHuntCommand
 import de.chasenet.blockhunt.commands.StartHuntCommand
 import de.chasenet.blockhunt.commands.StopHuntCommand
+import net.minecraftforge.common.ForgeConfigSpec
 import net.minecraftforge.event.RegisterCommandsEvent
 import net.minecraftforge.event.entity.player.PlayerEvent
+import net.minecraftforge.event.server.ServerStoppingEvent
+import net.minecraftforge.fml.ModLoadingContext
 import net.minecraftforge.fml.common.Mod
+import net.minecraftforge.fml.config.ModConfig
 import thedarkcolour.kotlinforforge.forge.DIST
 import thedarkcolour.kotlinforforge.forge.FORGE_BUS
 
@@ -20,6 +24,11 @@ import thedarkcolour.kotlinforforge.forge.FORGE_BUS
 @Mod(BlockHuntMod.MODID)
 object BlockHuntMod {
     const val MODID = "blockhunt"
+
+    private val configPair = ForgeConfigSpec.Builder().configure(::BlockHuntConfig)
+    val blockHuntConfig: BlockHuntConfig = configPair.left
+
+    private val blockHuntConfigSpec: ForgeConfigSpec = configPair.right
 
     init {
         if (DIST.isDedicatedServer) {

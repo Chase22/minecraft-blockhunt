@@ -3,7 +3,8 @@ package de.chasenet.blockhunt
 import com.mojang.logging.LogUtils
 import net.minecraft.commands.CommandSourceStack
 import net.minecraft.network.chat.Component
-import net.minecraft.resources.ResourceKey
+import net.minecraft.resources.ResourceLocation
+import net.minecraft.server.MinecraftServer
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.BlockItem
 import net.minecraft.world.item.ItemStack
@@ -11,16 +12,6 @@ import net.minecraft.world.level.block.Block
 import net.minecraftforge.registries.ForgeRegistries
 
 object BlockHuntGame {
-    private val BLACKLISTED_IDS by lazy {
-        listOf(
-            ForgeRegistries.BLOCKS.keys.filter { it.path.startsWith("infested_") },
-            ForgeRegistries.BLOCKS.keys.filter { it.path.endsWith("_ore") },
-            ForgeRegistries.BLOCKS.keys.filter { it.path.startsWith("potted_") }
-        ).flatten()
-    }
-
-    private val additionalKeys: MutableList<ResourceKey<Block>> = ArrayList()
-
     private val LOG = LogUtils.getLogger()
 
     var block: Block? = null
@@ -31,9 +22,16 @@ object BlockHuntGame {
 
     fun startGame(sourceStack: CommandSourceStack, block: Block? = null) {
         try {
+            val blackList = BlockHuntMod.blockHuntConfig.idBlacklistPatterns.get().map { pattern ->
+                val regex = pattern.toRegex()
+                ForgeRegistries.BLOCKS.keys.filter { it.toString().matches(regex) }
+            }.flatten() + BlockHuntMod.blockHuntConfig.idBlacklist.get().map(::ResourceLocation)
+
+            LOG.info(blackList.toString())
+
             val blocksList = ForgeRegistries.ITEMS.entries.filter { it.value is BlockItem }
                 .map { it.key to (it.value as BlockItem).block }
-                .filter { !(BLACKLISTED_IDS+additionalKeys).contains(it.first.location()) }
+                .filter { !blackList.contains(it.first.location()) }
 
             val selectedBlock = block ?: blocksList.random().second
 
@@ -53,9 +51,9 @@ object BlockHuntGame {
         }
     }
 
-    fun stopGame(sourceStack: CommandSourceStack) {
+    fun stopGame(server:MinecraftServer) {
         block = null
-        UiUtils.stopHuntUi(sourceStack.server.playerList.players)
+        UiUtils.stopHuntUi(server.playerList.players)
     }
 
     @JvmStatic
@@ -68,10 +66,21 @@ object BlockHuntGame {
         }
     }
 
-    fun skipGame(sourceStack: CommandSourceStack) {
+    fun skipGame(sourceStack: CommandSourceStack, retain: Boolean = false) {
         if (block == null) return
-        additionalKeys.add(ForgeRegistries.BLOCKS.getResourceKey(block).get())
-        LOG.info(additionalKeys.toString())
+        if (!retain) {
+            val key = ForgeRegistries.BLOCKS.getResourceKey(block).get()
+            BlockHuntMod.blockHuntConfig.idBlacklist.apply {
+                set(get().plus(key.location().toString()))
+                save()
+            }
+        }
         startGame(sourceStack)
     }
+}
+
+fun main() {
+    val string = "minecraft:infested_cobblestone"
+    val regex = "minecraft:infested_.*".toRegex()
+    println(regex.matches(string))
 }
