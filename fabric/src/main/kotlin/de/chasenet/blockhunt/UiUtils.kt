@@ -24,7 +24,7 @@ object UiUtils {
         sendTitle(players, "New Blockhunt!", block.name)
         bossBarWrapper = BossBarWrapper(
             commandSource.server.bossBarManager,
-            Registries.BLOCK.getKey(block).get().value.toString(),
+            "hunted_block",
             block.name,
             players
         )
@@ -64,7 +64,7 @@ class BossBarWrapper(
     name: Text,
     players: List<ServerPlayerEntity>
 ) {
-    private val bossbarId = Identifier.of(Blockhunt.MODID, id)
+    private val bossbarId = Identifier(Blockhunt.MODID, id)
     private val customBossEvent = bossBarManager.add(bossbarId, name).apply {
         addPlayers(players)
     }

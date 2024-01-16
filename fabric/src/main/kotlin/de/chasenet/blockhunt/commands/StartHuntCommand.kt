@@ -23,7 +23,7 @@ fun runCatching(block: () -> Unit) {
 object StartHuntCommand {
     fun build(registryAccess: CommandRegistryAccess): LiteralArgumentBuilder<ServerCommandSource> =
         literal<ServerCommandSource?>("start")
-            //.requires { it.player!!.hasPermissionLevel(2) }
+            .requires { it.player!!.hasPermissionLevel(2) }
             .executes {
                 de.chasenet.blockhunt.commands.runCatching { startHunt(it.source) }
                 return@executes 1
