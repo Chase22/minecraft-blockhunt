@@ -2,9 +2,7 @@ package de.chasenet
 
 import de.chasenet.blockhunt.BlockHuntConfig
 import de.chasenet.blockhunt.BlockHuntGame
-import de.chasenet.blockhunt.commands.SkipHuntCommand
-import de.chasenet.blockhunt.commands.StartHuntCommand
-import de.chasenet.blockhunt.commands.StopHuntCommand
+import de.chasenet.blockhunt.commands.*
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
@@ -19,9 +17,7 @@ object Blockhunt : ModInitializer {
     override fun onInitialize() {
         BlockHuntConfig.init()
         CommandRegistrationCallback.EVENT.register { dispatcher, registryAccess, environment ->
-            StartHuntCommand.register(dispatcher, registryAccess)
-            StopHuntCommand.register(dispatcher)
-            SkipHuntCommand.register(dispatcher)
+            BlockHuntCommand.register(dispatcher, registryAccess)
         }
 
         ServerTickEvents.END_SERVER_TICK.register { server ->
