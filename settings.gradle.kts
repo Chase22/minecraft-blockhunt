@@ -1,5 +1,5 @@
-include("forge")
-//include("fabric")
+//include("forge")
+include("fabric")
 
 pluginManagement {
     repositories {

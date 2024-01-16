@@ -17,7 +17,7 @@
 	"entrypoints": {
 		"main": [
 			{
-				"value": "de.chasenet.blockhunt",
+				"value": "de.chasenet.Blockhunt",
 				"adapter": "kotlin"
 			}
 		]
