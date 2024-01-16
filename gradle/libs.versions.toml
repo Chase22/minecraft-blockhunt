@@ -1,0 +1,11 @@
+[versions]
+midnightlib-version = "1.5.3-fabric"
+kotlin-version = "1.9.22"
+
+[libraries]
+midnightlib = { module = "maven.modrinth:midnightlib", version.ref="midnightlib-version"}
+kotlinx-serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.6.2" }
+
+[plugins]
+kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin-version" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin-version" }

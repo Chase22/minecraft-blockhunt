@@ -42,10 +42,10 @@ object BlockHuntGame {
 
 
         try {
-            val blackList = Blockhunt.blockHuntConfig.idBlacklistPatterns.map { pattern ->
+            val blackList = BlockHuntConfig.instance.idBlacklistPatterns.map { pattern ->
                 val regex = pattern.toRegex()
                 Registries.BLOCK.keys.filter { it.toString().matches(regex) }
-            }.flatten() + Blockhunt.blockHuntConfig.idBlacklist.map { Registries.BLOCK.get(Identifier.tryParse(it)) }
+            }.flatten() + BlockHuntConfig.instance.idBlacklist.map { Registries.BLOCK.get(Identifier.tryParse(it)) }
 
             val blocksList = Registries.ITEM.entrySet.filter { it.value is BlockItem }
                 .map { it.key to (it.value as BlockItem).block }
@@ -57,7 +57,7 @@ object BlockHuntGame {
 
             this.block = selectedBlock
 
-            if (Blockhunt.blockHuntConfig.clearInventory) {
+            if (BlockHuntConfig.instance.clearInventory) {
                 sourceStack.server.playerManager.playerList.forEach {
                     clearAndAddKit(it.inventory)
                 }
