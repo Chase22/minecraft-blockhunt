@@ -9,13 +9,13 @@ import net.minecraft.text.Text
 
 object SkipHuntCommand {
     fun build(): LiteralArgumentBuilder<ServerCommandSource> =
-        literal<ServerCommandSource>("skipHunt")
+        literal<ServerCommandSource>("skip")
             .requires { it.player!!.hasPermissionLevel(2) }
-            .executes(::skipGame).then(literal<ServerCommandSource>("retain").executes { skipGame(it, true) })
+            .executes(::skipGame).then(literal<ServerCommandSource>("blacklist").executes { skipGame(it, true) })
 
-    private fun skipGame(it: CommandContext<ServerCommandSource>, retain: Boolean = false): Int {
+    private fun skipGame(it: CommandContext<ServerCommandSource>, blacklist: Boolean = false): Int {
         if (BlockHuntGame.isActive) {
-            BlockHuntGame.skipGame(it.source, retain)
+            BlockHuntGame.skipGame(it.source, blacklist)
         } else {
             it.source.sendError(Text.literal("No hunt is active"))
         }

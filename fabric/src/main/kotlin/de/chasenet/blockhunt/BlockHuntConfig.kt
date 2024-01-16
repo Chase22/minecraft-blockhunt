@@ -9,6 +9,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
 import net.fabricmc.loader.api.FabricLoader
+import net.minecraft.block.Block
 import java.nio.file.Path
 import kotlin.io.path.*
 
@@ -20,6 +21,7 @@ data class BlockHuntConfig(
         "minecraft:bedrock",
         "minecraft:cave_air",
         "minecraft:command_block",
+        "minecraft:dirt_path",
         "minecraft:farmland",
         "minecraft:frogspawn",
         "minecraft:player_head",
@@ -49,6 +51,16 @@ data class BlockHuntConfig(
         fun updateConfig(config: BlockHuntConfig) {
             instance = config
             saveToFile(config)
+        }
+
+        fun blackListBlock(block: Block) {
+            BlockHuntConfig.updateConfig(
+                BlockHuntConfig.instance.let {
+                    it.copy(
+                        idBlacklist = it.idBlacklist + getRegistryKeyForBlock(block)
+                    )
+                }
+            )
         }
 
         @OptIn(ExperimentalSerializationApi::class)

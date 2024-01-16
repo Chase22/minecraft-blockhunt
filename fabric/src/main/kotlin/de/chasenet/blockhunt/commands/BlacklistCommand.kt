@@ -32,13 +32,7 @@ object BlacklistCommand {
                     return@executes 1
                 }
 
-                BlockHuntConfig.updateConfig(
-                    BlockHuntConfig.instance.let {
-                        it.copy(
-                            idBlacklist = it.idBlacklist + getRegistryKeyForBlock(block)
-                        )
-                    }
-                )
+                BlockHuntConfig.blackListBlock(block)
                 context.source.sendFeedback({
                     Text.literal("Blacklisted Block: ")
                         .append(Text.translatable(block.translationKey))

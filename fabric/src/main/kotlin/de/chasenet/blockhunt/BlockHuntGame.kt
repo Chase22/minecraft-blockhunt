@@ -1,13 +1,10 @@
 package de.chasenet.blockhunt
 
 import com.mojang.logging.LogUtils
-import de.chasenet.Blockhunt
 import net.minecraft.block.Block
 import net.minecraft.item.BlockItem
 import net.minecraft.item.ItemStack
 import net.minecraft.registry.Registries
-import net.minecraft.registry.RegistryKey
-import net.minecraft.registry.RegistryKeys
 import net.minecraft.scoreboard.ScoreboardCriterion
 import net.minecraft.scoreboard.ScoreboardDisplaySlot
 import net.minecraft.server.MinecraftServer
@@ -15,7 +12,6 @@ import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
-import java.lang.IllegalArgumentException
 
 object BlockHuntGame {
     private val LOG = LogUtils.getLogger()
@@ -98,15 +94,10 @@ object BlockHuntGame {
         block = null
     }
 
-    fun skipGame(sourceStack: ServerCommandSource, retain: Boolean = false) {
+    fun skipGame(sourceStack: ServerCommandSource, blacklist: Boolean = false) {
         if (block == null) return
-        if (!retain) {
-            val key = Registries.BLOCK.getKey(block).get()
-            //TODO FIX ME
-            //BlockHuntMod.blockHuntConfig.idBlacklist.apply {
-            //    set(get().plus(key.location().toString()))
-            //    save()
-            //}
+        if (blacklist) {
+            BlockHuntConfig.blackListBlock(block!!)
         }
         startGame(sourceStack)
     }
