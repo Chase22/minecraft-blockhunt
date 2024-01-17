@@ -4,7 +4,6 @@ import com.mojang.logging.LogUtils
 import de.chasenet.blockhunt.config.BlockHuntConfig
 import net.minecraft.block.Block
 import net.minecraft.item.BlockItem
-import net.minecraft.item.ItemStack
 import net.minecraft.registry.Registries
 import net.minecraft.scoreboard.ScoreboardCriterion
 import net.minecraft.scoreboard.ScoreboardDisplaySlot
@@ -77,15 +76,6 @@ object BlockHuntGame {
     fun stopGame(server: MinecraftServer) {
         block = null
         UiUtils.stopHuntUi(server.playerManager.playerList)
-    }
-
-    @JvmStatic
-    fun onBlockObtained(player: ServerPlayerEntity, stack: ItemStack) {
-        if (block == null) return
-
-        if (stack.item == block!!.asItem()) {
-            win(player)
-        }
     }
 
     fun win(player: ServerPlayerEntity) {
