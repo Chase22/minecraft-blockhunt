@@ -23,7 +23,7 @@ object BlockHuntGame {
     val isActive: Boolean
         get() = block != null
 
-    fun startGame(sourceStack: ServerCommandSource, block: Block? = null) {
+    fun startGame(sourceStack: ServerCommandSource, commandBlock: Block? = null) {
         with(sourceStack.server.scoreboard) {
             if (getNullableObjective(OBJECTIVE_ID) == null) {
                 val objective = addObjective(
@@ -40,16 +40,18 @@ object BlockHuntGame {
 
 
         try {
-            val blackList = BlockHuntConfig.instance.idBlacklistPatterns.map { pattern ->
-                val regex = pattern.toRegex()
-                Registries.BLOCK.keys.map { it.value }.filter { it.toString().matches(regex) }
-            }.flatten() + BlockHuntConfig.instance.idBlacklist
+            val selectedBlock = commandBlock ?: run {
+                val blackList = (BlockHuntConfig.instance.idBlacklistPatterns.map { pattern ->
+                    val regex = pattern.toRegex()
+                    Registries.BLOCK.keys.map { it.value }.filter { it.toString().matches(regex) }
+                }.flatten() + BlockHuntConfig.instance.idBlacklist).toSet()
 
-            val blocksList = Registries.ITEM.entrySet.filter { it.value is BlockItem }
-                .map { it.key to (it.value as BlockItem).block }
-                .filter { !blackList.contains(it.first.value) }
+                val blocksList = Registries.ITEM.entrySet.filter { it.value is BlockItem }
+                    .map { it.key to (it.value as BlockItem).block }
+                    .filter { !blackList.contains(it.first.value) }
 
-            val selectedBlock = block ?: blocksList.random().second
+                blocksList.random().second
+            }
 
             UiUtils.startHuntUi(sourceStack, selectedBlock)
 
