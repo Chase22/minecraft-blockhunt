@@ -1,6 +1,6 @@
 package de.chasenet
 
-import de.chasenet.blockhunt.BlockHuntConfig
+import de.chasenet.blockhunt.config.BlockHuntConfig
 import de.chasenet.blockhunt.BlockHuntGame
 import de.chasenet.blockhunt.commands.*
 import net.fabricmc.api.ModInitializer

@@ -1,15 +1,16 @@
-package de.chasenet.blockhunt
+package de.chasenet.blockhunt.config
 
 import de.chasenet.Blockhunt
 import de.chasenet.Blockhunt.logger
+import de.chasenet.blockhunt.getRegistryKeyForBlock
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.block.Block
+import net.minecraft.util.Identifier
 import java.nio.file.Path
 import kotlin.io.path.*
 
@@ -34,6 +35,9 @@ data class BlockHuntConfig(
     val starterKit: List<String> = emptyList(),
     val clearInventory: Boolean = false
 ) {
+    val identifierBlacklist: List<Identifier>
+        get() = idBlacklist.map(::Identifier)
+
     companion object {
         private val configFile: Path = FabricLoader.getInstance().configDir.resolve("${Blockhunt.MODID}.json")
         private val json = Json {
@@ -54,10 +58,12 @@ data class BlockHuntConfig(
         }
 
         fun blackListBlock(block: Block) {
-            BlockHuntConfig.updateConfig(
-                BlockHuntConfig.instance.let {
+            updateConfig(
+                instance.let {
                     it.copy(
-                        idBlacklist = it.idBlacklist + getRegistryKeyForBlock(block)
+                        idBlacklist = (it.identifierBlacklist + getRegistryKeyForBlock(block))
+                            .map(Identifier::toString)
+                            .sorted()
                     )
                 }
             )

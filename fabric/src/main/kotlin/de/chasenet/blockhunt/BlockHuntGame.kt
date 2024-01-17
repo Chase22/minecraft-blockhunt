@@ -1,6 +1,7 @@
 package de.chasenet.blockhunt
 
 import com.mojang.logging.LogUtils
+import de.chasenet.blockhunt.config.BlockHuntConfig
 import net.minecraft.block.Block
 import net.minecraft.item.BlockItem
 import net.minecraft.item.ItemStack
@@ -11,7 +12,6 @@ import net.minecraft.server.MinecraftServer
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
-import net.minecraft.util.Identifier
 
 object BlockHuntGame {
     private val LOG = LogUtils.getLogger()
@@ -44,7 +44,7 @@ object BlockHuntGame {
             val blackList = BlockHuntConfig.instance.idBlacklistPatterns.map { pattern ->
                 val regex = pattern.toRegex()
                 Registries.BLOCK.keys.map { it.value }.filter { it.toString().matches(regex) }
-            }.flatten() + BlockHuntConfig.instance.idBlacklist.map { Identifier(it) }
+            }.flatten() + BlockHuntConfig.instance.identifierBlacklist
 
             val blocksList = Registries.ITEM.entrySet.filter { it.value is BlockItem }
                 .map { it.key to (it.value as BlockItem).block }
