@@ -13,6 +13,7 @@ object BlockHuntCommand {
                 .then(StopHuntCommand.build())
                 .then(SkipHuntCommand.build())
                 .then(ConfigCommand.build())
+                .then(GiveHuntCommand.build())
                 .then(BlacklistCommand.build(registryAccess))
         )
     }
