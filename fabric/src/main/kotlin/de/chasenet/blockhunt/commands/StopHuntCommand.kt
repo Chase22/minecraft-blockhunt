@@ -8,7 +8,7 @@ import net.minecraft.text.Text
 
 object StopHuntCommand {
     fun build(): LiteralArgumentBuilder<ServerCommandSource> =
-        literal<ServerCommandSource>("stopHunt")
+        literal<ServerCommandSource>("stop")
             .requires { it.player!!.hasPermissionLevel(2) }
             .executes {
                 if (BlockHuntGame.isActive) {
