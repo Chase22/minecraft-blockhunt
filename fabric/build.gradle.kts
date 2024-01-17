@@ -1,38 +1,36 @@
 plugins {
-	id 'fabric-loom' version '1.5-SNAPSHOT'
-	id 'maven-publish'
+	alias(libs.plugins.fabric.loom)
+	id("maven-publish")
 	alias(libs.plugins.kotlin.jvm)
 	alias(libs.plugins.kotlinx.serialization)
 }
 
-version = project.mod_version
-group = project.maven_group
+version = libs.versions.mod.version.get()
+group = project.extra["maven_group"]!!
 
 base {
-	archivesName = project.archives_base_name
+	//archivesName = project.archives_base_name
 }
 
 repositories {
-	maven {
-		url = "https://api.modrinth.com/maven"
+	maven("https://api.modrinth.com/maven") {
 		name = "modrinth"
 
 	}
-	maven {
-		url = "https://minecraft.curseforge.com/api/maven"
+	maven("https://minecraft.curseforge.com/api/maven") {
 		name = "curseforge"
 	}
 }
 
 dependencies {
 	// To change the versions see the gradle.properties file
-	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	minecraft(libs.minecaft)
+	mappings("net.fabricmc:yarn:${libs.versions.yarn.mappings.get()}:v2")
+	modImplementation(libs.fabric.loader)
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-	modImplementation "net.fabricmc:fabric-language-kotlin:${project.fabric_kotlin_version}"
+	modImplementation(libs.fabric.api)
+	modImplementation(libs.fabric.kotlin)
 
 	// Uncomment the following line to enable the deprecated Fabric API modules. 
 	// These are included in the Fabric API production distribution and allow you to update your mod to the latest modules at a later more convenient time.
@@ -41,22 +39,16 @@ dependencies {
 
 }
 
-processResources {
-	inputs.property "version", project.version
+tasks.processResources {
+	inputs.property("version", project.version)
 
 	filesMatching("fabric.mod.json") {
-		expand "version": project.version
+		expand("version" to project.version)
 	}
 }
 
-tasks.withType(JavaCompile).configureEach {
-	it.options.release = 17
-}
-
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
-	kotlinOptions {
-		jvmTarget = 17
-	}
+kotlin {
+	jvmToolchain(17)
 }
 
 java {
@@ -69,12 +61,13 @@ java {
 	targetCompatibility = JavaVersion.VERSION_17
 }
 
-jar {
+tasks.jar {
 	from("LICENSE") {
 		rename { "${it}_${project.base.archivesName.get()}"}
 	}
 }
 
+/*
 // configure the maven publication
 publishing {
 	publications {
@@ -91,3 +84,4 @@ publishing {
 		// retrieving dependencies.
 	}
 }
+ */
