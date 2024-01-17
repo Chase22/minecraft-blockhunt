@@ -1,5 +1,6 @@
 package de.chasenet.blockhunt.commands
 
+import com.mojang.brigadier.arguments.BoolArgumentType
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.builder.LiteralArgumentBuilder.literal
 import com.mojang.brigadier.builder.RequiredArgumentBuilder.argument
@@ -28,23 +29,30 @@ object StartHuntCommand {
                 de.chasenet.blockhunt.commands.runCatching { startHunt(it.source) }
                 return@executes 1
             }.then(
-                argument<ServerCommandSource, BlockStateArgument>(
-                    "block",
-                    BlockStateArgumentType.blockState(registryAccess)
-                ).executes {
-                    de.chasenet.blockhunt.commands.runCatching {
-                        startHunt(
-                            it.source,
-                            BlockStateArgumentType.getBlockState(it, "block").blockState.block
-                        )
-                    }
+                argument<ServerCommandSource, Boolean>("repeat", BoolArgumentType.bool()).executes {
+                    startHunt(it.source, BoolArgumentType.getBool(it, "repeat"))
                     return@executes 1
-                })
+                }.then(
+                    argument<ServerCommandSource, BlockStateArgument>(
+                        "block",
+                        BlockStateArgumentType.blockState(registryAccess)
+                    ).executes {
+                        de.chasenet.blockhunt.commands.runCatching {
+                            startHunt(
+                                source = it.source,
+                                repeating = BoolArgumentType.getBool(it, "repeat"),
+                                block = BlockStateArgumentType.getBlockState(it, "block").blockState.block
+                            )
+                        }
+                        return@executes 1
+                    })
+            )
 
-    private fun startHunt(source: ServerCommandSource, block: Block? = null): Int {
+    private fun startHunt(source: ServerCommandSource, repeating: Boolean = false, block: Block? = null): Int {
         if (BlockHuntGame.isActive) {
             source.sendError(Text.literal("A hunt is already running"))
         } else {
+            BlockHuntGame.repeat = repeating
             BlockHuntGame.startGame(source, block)
             source.sendFeedback({ Text.literal("Hunt started successfully") }, false)
         }

@@ -22,7 +22,7 @@ object BlockHuntGame {
     val isActive: Boolean
         get() = block != null
 
-    val repeat = true
+    var repeat = false
 
     fun startGame(sourceStack: ServerCommandSource, commandBlock: Block? = null) {
         try {

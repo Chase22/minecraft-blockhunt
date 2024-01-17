@@ -12,6 +12,7 @@ object StopHuntCommand {
             .requires { it.player!!.hasPermissionLevel(2) }
             .executes {
                 if (BlockHuntGame.isActive) {
+                    BlockHuntGame.repeat = false
                     BlockHuntGame.stopGame(it.source.server)
                 } else {
                     it.source.sendError(Text.literal("No hunt is active"))
