@@ -6,8 +6,7 @@ import net.minecraft.block.Block
 import net.minecraft.entity.boss.BossBarManager
 import net.minecraft.network.packet.s2c.play.SubtitleS2CPacket
 import net.minecraft.network.packet.s2c.play.TitleS2CPacket
-import net.minecraft.registry.Registries
-import net.minecraft.server.command.ServerCommandSource
+import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
@@ -16,14 +15,14 @@ object UiUtils {
     private var bossBarWrapper: BossBarWrapper? = null
 
     fun startHuntUi(
-        commandSource: ServerCommandSource,
+        server: MinecraftServer,
         block: Block
     ) {
         bossBarWrapper?.destroy()
-        val players = commandSource.server.playerManager.playerList
+        val players = server.playerManager.playerList
         sendTitle(players, "New Blockhunt!", block.name)
         bossBarWrapper = BossBarWrapper(
-            commandSource.server.bossBarManager,
+            server.bossBarManager,
             "hunted_block",
             block.name,
             players
@@ -47,13 +46,21 @@ object UiUtils {
         bossBarWrapper?.destroy()
     }
 
+    fun nextHuntCountdown(players: List<ServerPlayerEntity>) {
+        sendTitle(players, "Next hunt starting")
+    }
+
+    fun updateHuntCountdown(players: List<ServerPlayerEntity>, countdown: Int) {
+        sendTitle(players, countdown.toString())
+    }
+
     private fun sendTitle(players: List<ServerPlayerEntity>, title: String, subtitle: Text? = null) {
-        val subtitleTextPacket = subtitle?.let(::SubtitleS2CPacket)
+        val subtitleTextPacket = subtitle?.let(::SubtitleS2CPacket) ?: SubtitleS2CPacket(Text.empty())
         val titleTextPacket = TitleS2CPacket(Text.literal(title))
-        LogUtils.getLogger().info("Sending Title $title")
+        LogUtils.getLogger().debug("Sending Title $title")
         players.forEach { serverPlayer: ServerPlayerEntity ->
-            subtitleTextPacket?.let { serverPlayer.networkHandler.send(it, null) }
-            serverPlayer.networkHandler.send(titleTextPacket, null)
+            serverPlayer.networkHandler.sendPacket(subtitleTextPacket)
+            serverPlayer.networkHandler.sendPacket(titleTextPacket)
         }
     }
 }

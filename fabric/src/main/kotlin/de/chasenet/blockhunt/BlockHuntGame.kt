@@ -22,8 +22,27 @@ object BlockHuntGame {
     val isActive: Boolean
         get() = block != null
 
+    val repeat = true
+
     fun startGame(sourceStack: ServerCommandSource, commandBlock: Block? = null) {
-        with(sourceStack.server.scoreboard) {
+        try {
+            startGame(sourceStack.server, commandBlock)
+
+            sourceStack.sendFeedback(
+                {
+                    Text.literal("Started hunt for block: ").append(
+                        Text.translatable(this.block!!.translationKey)
+                    )
+                }, true
+            )
+        } catch (e: Exception) {
+            sourceStack.sendError(Text.literal("An error occurred while starting the hunt. Please check the logs"))
+            LOG.error("Error executing command", e)
+        }
+    }
+
+    fun startGame(server: MinecraftServer, commandBlock: Block? = null) {
+        with(server.scoreboard) {
             if (getNullableObjective(OBJECTIVE_ID) == null) {
                 val objective = addObjective(
                     OBJECTIVE_ID,
@@ -36,40 +55,27 @@ object BlockHuntGame {
                 setObjectiveSlot(ScoreboardDisplaySlot.SIDEBAR, objective)
             }
         }
+        val selectedBlock = commandBlock ?: run {
+            val blackList = (BlockHuntConfig.instance.idBlacklistPatterns.map { pattern ->
+                val regex = pattern.toRegex()
+                Registries.BLOCK.keys.map { it.value }.filter { it.toString().matches(regex) }
+            }.flatten() + BlockHuntConfig.instance.idBlacklist).toSet()
 
+            val blocksList = Registries.ITEM.entrySet.filter { it.value is BlockItem }
+                .map { it.key to (it.value as BlockItem).block }
+                .filter { !blackList.contains(it.first.value) }
 
-        try {
-            val selectedBlock = commandBlock ?: run {
-                val blackList = (BlockHuntConfig.instance.idBlacklistPatterns.map { pattern ->
-                    val regex = pattern.toRegex()
-                    Registries.BLOCK.keys.map { it.value }.filter { it.toString().matches(regex) }
-                }.flatten() + BlockHuntConfig.instance.idBlacklist).toSet()
+            blocksList.random().second
+        }
 
-                val blocksList = Registries.ITEM.entrySet.filter { it.value is BlockItem }
-                    .map { it.key to (it.value as BlockItem).block }
-                    .filter { !blackList.contains(it.first.value) }
+        UiUtils.startHuntUi(server, selectedBlock)
 
-                blocksList.random().second
+        this.block = selectedBlock
+
+        if (BlockHuntConfig.instance.clearInventory) {
+            server.playerManager.playerList.forEach {
+                clearAndAddKit(it.inventory)
             }
-
-            UiUtils.startHuntUi(sourceStack, selectedBlock)
-
-            this.block = selectedBlock
-
-            if (BlockHuntConfig.instance.clearInventory) {
-                sourceStack.server.playerManager.playerList.forEach {
-                    clearAndAddKit(it.inventory)
-                }
-            }
-
-            sourceStack.sendFeedback(
-                { Text.literal("Started hunt for block: ").append(
-                    Text.translatable(selectedBlock.translationKey)
-                )}, true
-            )
-        } catch (e: Exception) {
-            sourceStack.sendError(Text.literal("An error occurred while starting the hunt. Please check the logs"))
-            LOG.error("Error executing command", e)
         }
     }
 
@@ -79,10 +85,30 @@ object BlockHuntGame {
     }
 
     fun win(player: ServerPlayerEntity) {
-        UiUtils.endHuntUi(player.server!!.playerManager.playerList, player)
+        UiUtils.endHuntUi(player.server.playerManager.playerList, player)
         player.scoreboard.getNullableObjective(OBJECTIVE_ID)
             ?.let { player.scoreboard.getOrCreateScore(player, it).incrementScore() }
         block = null
+
+        if (repeat) {
+            scheduleNextGame(player.server)
+        }
+    }
+
+    private fun scheduleNextGame(server: MinecraftServer) {
+        Thread {
+            var countdown = 10
+            Thread.sleep(5000)
+            UiUtils.nextHuntCountdown(server.playerManager.playerList)
+            Thread.sleep(2000)
+            while (countdown > 0) {
+                UiUtils.updateHuntCountdown(server.playerManager.playerList, countdown)
+                Thread.sleep(1000)
+                countdown -= 1
+            }
+            startGame(server)
+
+        }.start()
     }
 
     fun skipGame(sourceStack: ServerCommandSource, blacklist: Boolean = false) {
