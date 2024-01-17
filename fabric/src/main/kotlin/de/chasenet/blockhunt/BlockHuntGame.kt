@@ -15,7 +15,7 @@ import net.minecraft.text.Text
 
 object BlockHuntGame {
     private val LOG = LogUtils.getLogger()
-    const val OBJECTIVE_ID = "Blockhunt"
+    private const val OBJECTIVE_ID = "Blockhunt"
 
     var block: Block? = null
         private set
@@ -25,7 +25,6 @@ object BlockHuntGame {
 
     fun startGame(sourceStack: ServerCommandSource, block: Block? = null) {
         with(sourceStack.server.scoreboard) {
-
             if (getNullableObjective(OBJECTIVE_ID) == null) {
                 val objective = addObjective(
                     OBJECTIVE_ID,
@@ -44,7 +43,7 @@ object BlockHuntGame {
             val blackList = BlockHuntConfig.instance.idBlacklistPatterns.map { pattern ->
                 val regex = pattern.toRegex()
                 Registries.BLOCK.keys.map { it.value }.filter { it.toString().matches(regex) }
-            }.flatten() + BlockHuntConfig.instance.identifierBlacklist
+            }.flatten() + BlockHuntConfig.instance.idBlacklist
 
             val blocksList = Registries.ITEM.entrySet.filter { it.value is BlockItem }
                 .map { it.key to (it.value as BlockItem).block }

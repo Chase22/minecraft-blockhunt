@@ -1,8 +1,9 @@
 package de.chasenet
 
-import de.chasenet.blockhunt.config.BlockHuntConfig
+import de.chasenet.blockhunt.config.BlockHuntConfigFile
 import de.chasenet.blockhunt.BlockHuntGame
 import de.chasenet.blockhunt.commands.*
+import de.chasenet.blockhunt.config.BlockHuntConfig
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
