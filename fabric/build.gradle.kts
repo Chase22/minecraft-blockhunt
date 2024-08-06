@@ -20,6 +20,7 @@ repositories {
 	maven("https://minecraft.curseforge.com/api/maven") {
 		name = "curseforge"
 	}
+	maven("https://libraries.minecraft.net")
 }
 
 dependencies {
@@ -31,6 +32,8 @@ dependencies {
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation(libs.fabric.api)
 	modImplementation(libs.fabric.kotlin)
+	modImplementation(libs.admiral)
+	modImplementation("com.mojang:brigadier:1.0.18")
 
 	// Uncomment the following line to enable the deprecated Fabric API modules. 
 	// These are included in the Fabric API production distribution and allow you to update your mod to the latest modules at a later more convenient time.

@@ -8,6 +8,7 @@ loader-version="0.15.5"
 loom-version = "1.5-SNAPSHOT"
 fabric-version="0.94.0+1.20.4"
 fabric-kotlin-version="1.10.17+kotlin.1.9.22"
+admiral-version="0.4.4+1.20.4+fabric"
 
 mod-version = "1.20.4-1.0.0"
 
@@ -18,7 +19,7 @@ minecaft = { module = "com.mojang:minecraft", version.ref="minecraft-version" }
 fabric-loader = { module = "net.fabricmc:fabric-loader", version = "0.15.5" }
 fabric-api = { module = "net.fabricmc.fabric-api:fabric-api", version.ref = "fabric-version"}
 fabric-kotlin = { module = "net.fabricmc:fabric-language-kotlin", version.ref = "fabric-kotlin-version"}
-
+admiral = { module = "maven.modrinth:admiral", version.ref="admiral-version" }
 
 
 [plugins]

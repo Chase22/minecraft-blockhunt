@@ -4,6 +4,7 @@ import de.chasenet.blockhunt.config.BlockHuntConfigFile
 import de.chasenet.blockhunt.BlockHuntGame
 import de.chasenet.blockhunt.commands.*
 import de.chasenet.blockhunt.config.BlockHuntConfig
+import de.maxhenkel.admiral.MinecraftAdmiral
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
@@ -19,6 +20,12 @@ object Blockhunt : ModInitializer {
         BlockHuntConfig.init()
         CommandRegistrationCallback.EVENT.register { dispatcher, registryAccess, environment ->
             BlockHuntCommand.register(dispatcher, registryAccess)
+            MinecraftAdmiral.builder(dispatcher, registryAccess)
+                .addCommandClasses(
+                    NewBlockHuntCommand::class.java,
+                    NewBlockHuntCommand.ConfigCommands::class.java
+                )
+                .build()
         }
 
         ServerTickEvents.END_SERVER_TICK.register { server ->
